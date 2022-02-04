@@ -4,30 +4,9 @@ const rp = require('request-promise');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const emojis = require("../emojis.json");
 const defaultCurrencyCache = {};
-const { cache } = require('../index');
+const { cache, symbolToId, ids } = require('../index');
 const settingsSchema = require("../schemas/settings-schema");
 const currencies = require("../currencies.json");
-
-const symbolToId = {};
-const ids = [];
-
-const getSymbolToId = {
-	method: 'GET',
-	uri: 'https://api.coingecko.com/api/v3/coins/list/',
-	json: true,
-	gzip: true
-};
-
-rp(getSymbolToId).then( async (response) => {
-	response.forEach(e => {
-		symbolToId[e.symbol] = e.id;
-        ids.push(e.id);
-	})
-    symbolToId["eth"] = "ethereum";
-}).catch((err) => {
-	console.log('Symbol => Slug Error:', err.message);
-});
-
 
 const months = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug", "Sep.", "Oct.", "Nov.", "Dec. "];
 
@@ -36,6 +15,7 @@ const height = 1000;
 
 module.exports = {
     name: "chart",
+    cooldown: 5,
     async execute(message, args, client) {
         if (args.length === 0) {
             if (cache[message.guild.id] && cache[message.guild.id].mainCoin) {
